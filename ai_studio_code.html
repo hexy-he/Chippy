@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Invitation</title>
+    <style>
+        /* CSS Variables for easy theme management */
+        :root {
+            --bg-color: #fff0f3;
+            --card-bg: #ffffff;
+            --primary-pink: #ff85a1;
+            --secondary-pink: #fbb1bd;
+            --text-color: #4a4a4a;
+            --shadow: 0 8px 30px rgba(255, 133, 161, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+            overflow: hidden; /* Prevents scrollbars during heart animation */
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+
+        /* Image Styling */
+        .image-container {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 15px;
+            object-fit: contain;
+        }
+
+        /* Header Styling */
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+            outline: none;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        h1[contenteditable="true"]:hover {
+            background: #fff5f7;
+            cursor: text;
+        }
+
+        /* Button Styling */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #yesBtn {
+            background-color: var(--primary-pink);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 133, 161, 0.4);
+        }
+
+        #yesBtn:hover {
+            transform: translateY(-2px);
+            background-color: #ff5c81;
+        }
+
+        #noBtn {
+            background-color: #e0e0e0;
+            color: #757575;
+        }
+
+        /* Stage 3 specific */
+        .success-message {
+            font-size: 2rem;
+            color: var(--primary-pink);
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Heart Animation */
+        .heart {
+            position: fixed;
+            font-size: 1.5rem;
+            top: -10%;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        /* Responsive scaling */
+        @media (max-width: 480px) {
+            .container { width: 95%; padding: 1.5rem; }
+            h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <div class="image-container">
+            <img src="guitar.gif" id="displayImg" alt="Animation">
+        </div>
+
+        <h1 id="headerText" contenteditable="true">Would you like to go out with me?</h1>
+
+        <div class="btn-group" id="btnGroup">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+
+        <div id="successMsg" class="success-message">I knew it! ❤️</div>
+    </div>
+
+    <script>
+        const headerText = document.getElementById('headerText');
+        const displayImg = document.getElementById('displayImg');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const btnGroup = document.getElementById('btnGroup');
+        const successMsg = document.getElementById('successMsg');
+
+        let stage = 1;
+        let yesScale = 1;
+        let noClickCount = 0;
+
+        const messages = [
+            "Are you sure?",
+            "Really sure??",
+            "Think again! 🥺",
+            "Last chance!",
+            "Surely not?",
+            "You're breaking my heart...",
+            "I'll be very sad! 😭",
+            "Please? ✨"
+        ];
+
+        // Handle the "No" button logic
+        noBtn.addEventListener('click', () => {
+            if (stage === 1) {
+                // Move to Stage 2
+                stage = 2;
+                displayImg.src = "fall.gif";
+            }
+
+            // Stage 2 logic: Grow Yes button and change text
+            yesScale += 0.4; // Significantly larger
+            yesBtn.style.transform = `scale(${yesScale})`;
+            
+            // Push the No button further away as Yes grows
+            noBtn.style.transform = `translateX(${noClickCount * 2}px)`;
+
+            // Update header text from array
+            if (noClickCount < messages.length) {
+                headerText.innerText = messages[noClickCount];
+                noClickCount++;
+            } else {
+                headerText.innerText = "Okay, you're just being mean now! 😂";
+            }
+            
+            // Ensure header isn't editable once the "game" starts for better UI
+            headerText.contentEditable = "false";
+        });
+
+        // Handle the "Yes" button logic
+        yesBtn.addEventListener('click', () => {
+            // Move to Stage 3
+            stage = 3;
+            
+            // Update UI
+            displayImg.src = "dance.gif";
+            headerText.style.display = "none";
+            btnGroup.style.display = "none";
+            successMsg.style.display = "block";
+            
+            // Trigger floating hearts
+            startHearts();
+        });
+
+        // CSS Heart Animation Logic
+        function startHearts() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤️';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                heart.style.opacity = Math.random();
+                heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                
+                document.body.appendChild(heart);
+
+                // Remove heart after animation finishes
+                setTimeout(() => {
+                    heart.remove();
+                }, 5000);
+            }, 300);
+        }
+
+        // Prevent Stage 1 Editable header from losing focus on Enter key
+        headerText.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                headerText.blur();
+            }
+        });
+    </script>
+</body>
+</html>
